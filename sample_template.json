@@ -1,0 +1,125 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "s3configbucket123456": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "Private",
+        "VersioningConfiguration": {
+          "Status": "Suspended"
+        }
+      }
+    },
+    "topictesttopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "DisplayName": "test_topic",
+        "Subscription": [
+          {
+            "Endpoint": "test@hotmail.com",
+            "Protocol": "email"
+          }
+        ]
+      }
+    },
+    "snspolicytesttopic": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "Topics": [
+          {
+            "Ref": "topictesttopic"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "__default_policy_ID",
+          "Statement": [
+            {
+              "Sid": "__default_statement_ID",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Action": [
+                "SNS:GetTopicAttributes",
+                "SNS:SetTopicAttributes",
+                "SNS:AddPermission",
+                "SNS:RemovePermission",
+                "SNS:DeleteTopic",
+                "SNS:Subscribe",
+                "SNS:ListSubscriptionsByTopic",
+                "SNS:Publish",
+                "SNS:Receive"
+              ],
+              "Resource": {
+                "Ref": "topictesttopic"
+              },
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceOwner": "433659155580"
+                }
+              }
+            },
+            {
+              "Sid": "AWSEvents_ec2_state_change_notification_Id123456",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              },
+              "Action": "sns:Publish",
+              "Resource": {
+                "Ref": "topictesttopic"
+              }
+            },
+            {
+              "Sid": "AWSEvents_ec2-enable-detailed-monitoring_Id123456",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              },
+              "Action": "sns:Publish",
+              "Resource": {
+                "Ref": "topictesttopic"
+              }
+            },
+            {
+              "Sid": "AWSEvents_ec2-put-cpu-utilization-alarm_Id123456",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              },
+              "Action": "sns:Publish",
+              "Resource": {
+                "Ref": "topictesttopic"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "alarmec2CPUUtilizationi123456": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "ActionsEnabled": "true",
+        "AlarmDescription": "Alarm when server CPU exceeds 70%",
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "EvaluationPeriods": "5",
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Period": "60",
+        "Statistic": "Average",
+        "Threshold": "70.0",
+        "AlarmActions": [
+          "arn:aws:sns:us-east-2:123456:topic-1"
+        ],
+        "Dimensions": [
+          {
+            "Name": "InstanceId",
+            "Value": "i-123456"
+          }
+        ]
+      }
+    }
+  },
+  "Description": "test template"
+}
